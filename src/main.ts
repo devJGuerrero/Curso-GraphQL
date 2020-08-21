@@ -2,7 +2,8 @@ import cors from "cors";
 import express from "express";
 import { schema } from "./graphql/schema/";
 import compression from "compression";
-import { graphqlHTTP } from "express-graphql";
+import { ApolloServer } from "apollo-server-express";
+import { createServer } from "http";
 
 const app = express();
 const PORT = 3000;
@@ -10,13 +11,15 @@ const PORT = 3000;
 app.use("*", cors());
 app.use(compression());
 
-/** Routes application */
-app.use("/", graphqlHTTP({
+const clientServer = new ApolloServer({
   schema,
-  graphiql: true
-}));
+  introspection: true
+});
 
-app.listen(
+clientServer.applyMiddleware({ app });
+
+const httpServer = createServer(app);
+httpServer.listen(
   { port: PORT },
   () => console.log(`Application runing. http://localhost:${ PORT }/graphql`)
 );
